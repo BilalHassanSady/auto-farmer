@@ -1,0 +1,79 @@
+//author : bilal hassan sady
+
+#include <TroykaDHT.h>
+#include <SoftwareSerial.h>
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(7,6,5,4,3,2);
+SoftwareSerial sgsm(11,12);//for gsm module
+DHT dht(10, DHT11);
+
+int sen = A0;
+int solval = 0;
+int temval = 0;
+int trans = 9;
+void setup() {
+  dht.begin();
+  sgsm.begin(9600);
+  lcd.begin(16,2);
+  lcd.print("Smart Arabic");
+  lcd.setCursor(1,0);
+  lcd.print("Projects");
+  delay(150);
+  lcd.clear();
+  sgsm.print("AT");  
+  delay(100);
+  sgsm.print("AT+CNMI=2,2,0,0,0\r"); 
+  delay(100);
+  pinMode(trans,OUTPUT);
+  digitalWrite(trans,0);
+}
+
+void loop() {
+  solval = analogRead(A0);
+  temval = dht.getTemperatureC();
+  if(sgsm.available()){
+    sgsm.print("AT+CNMI=2,2,0,0,0\r"); 
+    String data = sgsm.readString();
+    data.trim();
+    if(data.indexOf("send")>=0){
+      control_pump_on();
+    }
+    if(data.indexOf("turnOFF")>=0){
+      control_pump_off();
+    }
+  }
+  print_data_lcd();
+  if(solval<900){
+     control_pump_off();
+  }
+}
+void send_data(){
+  sgsm.write("AT");
+  delay(100);
+  sgsm.write("AT+CMGF=1");
+  delay(100);
+  sgsm.write("data is : temp : ");
+  sgsm.write(temval);
+  sgsm.write("soil : ");
+  sgsm.write(solval);
+  sgsm.write(0x1A);
+}
+
+void print_data_lcd(){
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("temp : ");
+  lcd.print(temval);
+  lcd.setCursor(0,1);
+  lcd.print("soil : ");
+  lcd.print(solval);
+}
+
+void control_pump_on(){
+  digitalWrite(trans,1);
+}
+
+void control_pump_off(){
+  digitalWrite(trans,0);
+}
