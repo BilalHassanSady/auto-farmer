@@ -30,6 +30,7 @@ void setup() {
 }
 
 void loop() {
+  dht.read();
   solval = analogRead(A0);
   temval = dht.getTemperatureC();
   if(sgsm.available()){
