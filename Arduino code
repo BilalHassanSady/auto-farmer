@@ -37,6 +37,9 @@ void loop() {
     String data = sgsm.readString();
     data.trim();
     if(data.indexOf("send")>=0){
+      send_data();
+    }
+     if(data.indexOf("turnON")>=0){
       control_pump_on();
     }
     if(data.indexOf("turnOFF")>=0){
